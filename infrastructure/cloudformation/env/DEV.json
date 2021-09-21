@@ -1,0 +1,85 @@
+{
+   "0-CORE": {
+      "ProjectUpper": "ZA-SBCPP",
+      "ProjectLower": "za-sbcpp",
+      "EnvironmentUpper": "DEV",
+      "EnvironmentLower": "dev",
+      "AZ1": "a",
+      "AZ2": "b",
+      "AZ3": "c",
+      "Domain": "dev.sagepayrollprofessional.com"
+   },
+   "1-VPC": {
+      "StackCore": "SBCPP-DEV-CORE",
+      "CIDRPrefix": "10.0"
+   },
+   "2-AD": {
+      "StackCore": "SBCPP-DEV-CORE",
+      "StackVPC": "SBCPP-DEV-VPC"
+   },
+   "3-FSX": {
+      "StackCore": "SBCPP-DEV-CORE",
+      "StackVPC": "SBCPP-DEV-VPC",
+      "StackAD": "SBCPP-DEV-AD"      
+   },
+   "4-S3": {
+      "StackCore": "SBCPP-DEV-CORE"
+   },
+   "5-SNS": {
+      "StackCore": "SBCPP-DEV-CORE"
+   },
+   "6-RDS": {
+      "StackCore": "SBCPP-DEV-CORE",
+      "StackVPC": "SBCPP-DEV-VPC",
+      "StackSNS": "SBCPP-DEV-SNS",
+      "StackS3": "SBCPP-DEV-S3",
+      "DBBackupRetention": "7",
+      "DBInstanceClass": "db.m5.large",
+      "DBName": "sbcpp-dev-rds",
+      "DBStorage": "100",
+      "DBSnapshotIdentifier": "",
+      "DBMultiAZ": "false"
+   },
+   "7-ALB-PORTAL": {
+      "StackCore": "SBCPP-DEV-CORE",
+      "StackSNS": "SBCPP-DEV-SNS",
+      "StackS3": "SBCPP-DEV-S3",
+      "StackVPC": "SBCPP-DEV-VPC",
+      "CertificateArn": "arn:aws:acm:af-south-1:211420905985:certificate/1c146232-bde9-4f65-8fce-452890d85fea"
+   },
+   "8-ASG-PORTAL": {
+      "StackCore": "SBCPP-DEV-CORE",
+      "StackVPC": "SBCPP-DEV-VPC",
+      "StackFSX": "SBCPP-DEV-FSX",
+      "StackS3": "SBCPP-DEV-S3",
+      "StackSNS": "SBCPP-DEV-SNS",
+      "StackRDS": "SBCPP-DEV-RDS",
+      "StackALB": "SBCPP-DEV-ALB-PORTAL",
+      "KeyPair": "SBCPP-DEV-KEYPAIR",
+      "DesiredCapacity": "1",
+      "InstanceType": "t3.medium",
+      "ReleaseIdentifier": "20210820-1354",
+      "AMIWindows": "ami-05a984af7d0727437"
+   },
+   "9-ALB-ACU": {
+      "StackCore": "SBCPP-DEV-CORE",
+      "StackSNS": "SBCPP-DEV-SNS",
+      "StackS3": "SBCPP-DEV-S3",
+      "StackVPC": "SBCPP-DEV-VPC",
+      "CertificateArn": "arn:aws:acm:af-south-1:211420905985:certificate/1c146232-bde9-4f65-8fce-452890d85fea"
+   },
+   "10-ASG-ACU": {
+      "StackCore": "SBCPP-DEV-CORE",
+      "StackVPC": "SBCPP-DEV-VPC",
+      "StackFSX": "SBCPP-DEV-FSX",
+      "StackS3": "SBCPP-DEV-S3",
+      "StackSNS": "SBCPP-DEV-SNS",
+      "StackRDS": "SBCPP-DEV-RDS",
+      "StackALB": "SBCPP-DEV-ALB-PORTAL",
+      "KeyPair": "SBCPP-DEV-KEYPAIR",
+      "DesiredCapacity": "1",
+      "InstanceType": "t3.medium",
+      "ReleaseIdentifier": "20210820-1354",
+      "AMIWindows": "ami-0e75e619b3d2cc826"
+   }
+}

@@ -1,0 +1,49 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ZA - SBCPP - SNS stack'
+
+Parameters:
+  StackCore:
+    Description: Name of core stack to import values from
+    Type: String
+
+Metadata:
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "Shared"
+        Parameters: 
+          - StackCore
+
+Resources:
+  SNSTopicWarning:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SNS"
+            - "WARNING"
+
+  SNSTopicCritical:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SNS"
+            - "CRITICAL"
+Outputs:
+  SNSTopicWarning:
+    Description: SNS Topic ARN - Warning
+    Value: !Ref SNSTopicWarning
+    Export:
+      Name: !Sub "${AWS::StackName}-SNSTopicWarning"
+  SNSTopicCritical:
+    Description: SNS Topic ARN - Critical
+    Value: !Ref SNSTopicCritical
+    Export:
+      Name: !Sub "${AWS::StackName}-SNSTopicCritical"

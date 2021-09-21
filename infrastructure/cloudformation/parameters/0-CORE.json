@@ -1,0 +1,34 @@
+[
+  {
+    "ParameterKey": "ProjectUpper",
+    "ParameterValue": "#{ProjectUpper}#"
+  },
+  {
+    "ParameterKey": "ProjectLower",
+    "ParameterValue": "#{ProjectLower}#"
+  },
+  {
+    "ParameterKey": "EnvironmentUpper",
+    "ParameterValue": "#{EnvironmentUpper}#"
+  },
+  {
+    "ParameterKey": "EnvironmentLower",
+    "ParameterValue": "#{EnvironmentLower}#"
+  },
+  {
+    "ParameterKey": "AZ1",
+    "ParameterValue": "#{AZ1}#"
+  },
+  {
+    "ParameterKey": "AZ2",
+    "ParameterValue": "#{AZ2}#"
+  },
+  {
+    "ParameterKey": "AZ3",
+    "ParameterValue": "#{AZ3}#"
+  },
+  {
+    "ParameterKey": "Domain",
+    "ParameterValue": "#{Domain}#"
+  }
+]

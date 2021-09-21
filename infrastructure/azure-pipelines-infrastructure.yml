@@ -1,0 +1,38 @@
+trigger:
+  branches:
+    include:
+      - main
+      - feat/*
+  paths:
+    include:
+      - 'infrastructure/*'
+
+stages:
+- stage: build
+  jobs:
+  - job: "BuildArtifact"
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: PublishPipelineArtifact@1
+        inputs: 
+          targetPath: '$(System.DefaultWorkingDirectory)'
+          artifactName: 'drop'
+          artifactType: 'pipeline'
+          
+# Dev environment
+- stage: dev
+  jobs:
+    - job: "Deploy_Dev"
+      pool:
+        vmImage: 'ubuntu-latest'
+      variables:
+        - group: SBCPP-DEV
+        - template: devops/templates/parameters/dev.yml
+      steps:
+        - template: devops/templates/deploy-cfn.yml
+          parameters:
+            environmentName: ${{ variables.environmentName }}
+            dependOn: 'build'
+            awsCredential: ${{ variables.awsCredential }}
+            awsRegion: ${{ variables.awsRegion }}

@@ -1,0 +1,10 @@
+[
+    {
+        "ParameterKey": "StackCore",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-CORE"
+    },
+    {
+        "ParameterKey": "StackVPC",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-VPC"
+    }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "ParameterKey": "StackCore",
+    "ParameterValue": "SBCPP-QA-CORE"
+  },
+  {
+    "ParameterKey": "StackVPC",
+    "ParameterValue": "SBCPP-QA-VPC"
+  },
+  {
+    "ParameterKey": "AdminPassword",
+    "ParameterValue": "****"
+  }
+]

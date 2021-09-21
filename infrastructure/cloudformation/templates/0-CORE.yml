@@ -1,0 +1,139 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "ZA - SAGESI - Core stack"
+
+Parameters:
+  ProjectUpper:
+    Default: ZA-SAGESI
+    Description: Name of project (upper case)
+    Type: String
+  ProjectLower:
+    Default: za-sagesi
+    Description: Name of project (lower case)
+    Type: String
+  EnvironmentUpper:
+    Description: Name of environment (upper case)
+    Type: String
+    AllowedValues:
+      - DEV
+      - STG
+      - PD
+  EnvironmentLower:
+    Description: Name of environment (lower case)
+    Type: String
+    AllowedValues:
+      - dev
+      - stg
+      - prd
+  Domain:
+    Description: Domain name
+    Type: String
+    AllowedValues:
+      - dev.sagepayrollprofessional.com
+      - stg.sagepayrollprofessional.com
+      - sagepayrollprofessional.com
+  AZ1:
+    Description: Final letter of AZ1
+    Type: String
+    Default: a
+    AllowedValues:
+      - a
+      - b
+      - c
+      - d
+      - e
+      - f
+  AZ2:
+    Description: Final letter of AZ2
+    Type: String
+    Default: b
+    AllowedValues:
+      - a
+      - b
+      - c
+      - d
+      - e
+      - f
+  AZ3:
+    Description: Final letter of AZ3
+    Type: String
+    Default: c
+    AllowedValues:
+      - a
+      - b
+      - c
+      - d
+      - e
+      - f
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Project"
+        Parameters:
+          - ProjectUpper
+          - ProjectLower
+          - EnvironmentUpper
+          - EnvironmentLower
+          - Domain
+      - Label:
+          default: "VPC"
+        Parameters:
+          - AZ1
+          - AZ2
+          - AZ3
+
+Resources:
+  S3BucketDeploy:
+    Type: AWS::EC2::
+    Properties:
+      AccessControl: Private
+      BucketName: !Sub "${ProjectLower}-${EnvironmentLower}-deploy"
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: Environment
+          Value: !Ref "EnvironmentUpper"
+
+Outputs:
+  ProjectUpper:
+    Description: Name of project (upper case)
+    Value: !Ref ProjectUpper
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectUpper"
+  ProjectLower:
+    Description: Name of project (lower case)
+    Value: !Ref ProjectLower
+    Export:
+      Name: !Sub "${AWS::StackName}-ProjectLower"
+  EnvironmentUpper:
+    Description: Name of environment (upper case)
+    Value: !Ref EnvironmentUpper
+    Export:
+      Name: !Sub "${AWS::StackName}-EnvironmentUpper"
+  EnvironmentLower:
+    Description: Name of environment (lower case)
+    Value: !Ref EnvironmentLower
+    Export:
+      Name: !Sub "${AWS::StackName}-EnvironmentLower"
+  Domain:
+    Description: Domain name
+    Value: !Ref Domain
+    Export:
+      Name: !Sub "${AWS::StackName}-Domain"
+  AZ1:
+    Description: Final letter of AZ1
+    Value: !Ref AZ1
+    Export:
+      Name: !Sub "${AWS::StackName}-AZ1"
+  AZ2:
+    Description: Final letter of AZ2
+    Value: !Ref AZ2
+    Export:
+      Name: !Sub "${AWS::StackName}-AZ2"
+  AZ3:
+    Description: Final letter of AZ3
+    Value: !Ref AZ3
+    Export:
+      Name: !Sub "${AWS::StackName}-AZ3"

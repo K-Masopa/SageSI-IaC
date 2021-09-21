@@ -1,0 +1,102 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "ZA - SBCPP - FSX stack"
+
+Parameters:
+  StackCore:
+    Description: Name of core stack to import values from
+    Type: String
+  StackVPC:
+    Description: Name of VPC stack to import values from
+    Type: String
+  StackAD:
+    Description: Name of VPC stack to import values from
+    Type: String
+
+Metadata:
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "Shared"
+        Parameters: 
+          - StackCore
+          - StackVPC
+          - StackAD
+
+Resources:
+  SecGrpFSx:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SG"
+            - "FSx"
+      GroupDescription: Allows access to FSx
+      VpcId:
+        Fn::ImportValue: !Sub "${StackVPC}-VPC"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SG"
+            - "FSx"
+
+  FSxFileSystem:
+    Type: 'AWS::FSx::FileSystem'
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      FileSystemType: WINDOWS
+      StorageCapacity: 2000
+      StorageType: SSD
+      SubnetIds:
+          - Fn::ImportValue: !Sub "${StackVPC}-SubnetManagement1"
+          - Fn::ImportValue: !Sub "${StackVPC}-SubnetManagement2"
+      SecurityGroupIds:
+        - !Ref SecGrpFSx
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "FSx"
+      WindowsConfiguration:
+        ActiveDirectoryId: 
+          Fn::ImportValue: !Sub "${StackAD}-DirectoryID"
+        ThroughputCapacity: 8
+        Aliases: 
+          - !Join
+            - '.'
+            - - "fsx"
+              - Fn::ImportValue: !Sub "${StackCore}-EnvironmentLower"
+              - "sbcpp"
+        WeeklyMaintenanceStartTime: '7:23:00'
+        DailyAutomaticBackupStartTime: '01:00'
+        AutomaticBackupRetentionDays: 90
+        DeploymentType: MULTI_AZ_1
+        PreferredSubnetId:
+          Fn::ImportValue: !Sub "${StackVPC}-SubnetManagement1"
+        CopyTagsToBackups: true
+
+Outputs:
+  FileSystemId:
+    Value: !Ref FSxFileSystem
+    Description: FSx File System ID
+    Export:
+      Name: !Sub "${AWS::StackName}-FileSystemID"
+  FileSystemDNS:
+    Value: !GetAtt FSxFileSystem.DNSName
+    Description: FSx File system DNS
+    Export:
+      Name: !Sub "${AWS::StackName}-FileSystemDNS"
+  SecGrpFSX:
+    Value: !Ref SecGrpFSx
+    Description: FSx Security Group ID
+    Export:
+      Name: !Sub "${AWS::StackName}-SecGrpFSX"

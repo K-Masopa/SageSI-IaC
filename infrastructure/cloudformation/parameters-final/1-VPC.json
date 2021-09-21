@@ -1,0 +1,10 @@
+[
+  {
+    "ParameterKey": "StackCore",
+    "ParameterValue": "SBCPP-QA-CORE"
+  },
+  {
+    "ParameterKey": "CIDRPrefix",
+    "ParameterValue": "10.0"
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "ParameterKey": "StackCore",
+    "ParameterValue": "#{StackCore}#"
+  },
+  {
+    "ParameterKey": "StackVPC",
+    "ParameterValue": "#{StackVPC}#"
+  },
+  {
+    "ParameterKey": "StackFSX",
+    "ParameterValue": "#{StackFSX}#"
+  },
+  {
+    "ParameterKey": "StackS3",
+    "ParameterValue": "#{StackS3}#"
+  },
+  {
+    "ParameterKey": "StackSNS",
+    "ParameterValue": "#{StackSNS}#"
+  },
+  {
+    "ParameterKey": "StackRDS",
+    "ParameterValue": "#{StackRDS}#"
+  },
+  {
+    "ParameterKey": "StackALB",
+    "ParameterValue": "#{StackALB}#"
+  },
+  {
+    "ParameterKey": "KeyPair",
+    "ParameterValue": "#{KeyPair}#"
+  },
+  {
+    "ParameterKey": "DesiredCapacity",
+    "ParameterValue": "#{DesiredCapacity}#"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "#{InstanceType}#"
+  },
+  {
+    "ParameterKey": "ReleaseIdentifier",
+    "ParameterValue": "#{ReleaseIdentifier}#"
+  },
+  {
+    "ParameterKey": "AMIWindows",
+    "ParameterValue": "#{AMIWindows}#"
+  }
+]

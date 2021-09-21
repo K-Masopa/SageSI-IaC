@@ -1,0 +1,213 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "ZA - SBCPP - ALB PORTAL stack"
+
+Parameters:
+  StackCore:
+    Description: Name of core stack to import values from
+    Type: String
+  StackVPC:
+    Description: Name of VPC stack to import values from
+    Type: String
+  StackS3:
+    Description: Name of S3 stack to import values from
+    Type: String
+  StackSNS:
+    Description: Name of SNS stack to import values from
+    Type: String
+  CertificateArn:
+    Description: ARN of certificate in ACM
+    Type: String
+
+Metadata:
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "Shared"
+        Parameters: 
+          - StackCore
+          - StackVPC
+          - StackS3
+          - StackSNS
+      - 
+        Label: 
+          default: "Local"
+        Parameters: 
+          - CertificateArn
+
+Resources: 
+  SecGrpALB:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SG"
+            - "ALB"
+            - "PORTAL"
+      GroupDescription: Allows access to the Portal ALB
+      VpcId:
+        Fn::ImportValue: !Sub "${StackVPC}-VPC"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SG"
+            - "ALB"
+            - "PORTAL"
+
+  SecGroupALBCloudflareIPV4:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !GetAtt SecGrpALB.GroupId
+      Description: Cloudflare IPV4 Ranges
+      SourcePrefixListId: 
+        Fn::ImportValue: !Sub "${StackVPC}-PrefixListCloudflareIPV4"
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+  SecGroupALBCloudflareIPV6:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !GetAtt SecGrpALB.GroupId
+      Description: Cloudflare IPV6 Ranges
+      SourcePrefixListId: 
+        Fn::ImportValue: !Sub "${StackVPC}-PrefixListCloudflareIPV6"
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      LoadBalancerAttributes:
+        - Key: access_logs.s3.enabled
+          Value: 'true'
+        - Key: access_logs.s3.bucket
+          Value: 
+            Fn::ImportValue: !Sub "${StackS3}-S3BucketLogsName"
+        - Key: idle_timeout.timeout_seconds
+          Value: '120'
+      SecurityGroups:
+        - !Ref SecGrpALB
+      Subnets:
+        - Fn::ImportValue: !Sub "${StackVPC}-SubnetPublic1"
+        - Fn::ImportValue: !Sub "${StackVPC}-SubnetPublic2"
+        - Fn::ImportValue: !Sub "${StackVPC}-SubnetPublic3"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "ALB"
+            - "PORTAL"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: PORTAL
+      Type: application
+
+  TargetGroupWeb80:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      HealthCheckPath: "/"
+      VpcId:
+        Fn::ImportValue: !Sub "${StackVPC}-VPC"
+      HealthCheckIntervalSeconds: 20
+      HealthCheckTimeoutSeconds: 15
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 10
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "ALB"
+            - "PORTAL"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: PORTAL
+
+  ALBListener443:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Certificates:
+        - CertificateArn: !Ref CertificateArn
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupWeb80
+      LoadBalancerArn: !Ref ALB
+      Port: 443
+      Protocol: HTTPS
+
+  CWAALBUnHealthyHostCount:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: True
+      AlarmActions:
+        - Fn::ImportValue: !Sub "${StackSNS}-SNSTopicCritical"
+      AlarmDescription: UnHealthyHostCount
+      AlarmName: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "ALB"
+            - "PORTAL"
+            - "UnHealthyHostCount"
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: TargetGroup
+          Value: !GetAtt TargetGroupWeb80.TargetGroupFullName
+        - Name: LoadBalancer
+          Value: !GetAtt ALB.LoadBalancerFullName
+      EvaluationPeriods: 3
+      InsufficientDataActions:
+        - Fn::ImportValue: !Sub "${StackSNS}-SNSTopicCritical"
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      OKActions:
+        - Fn::ImportValue: !Sub "${StackSNS}-SNSTopicCritical"
+      Period: 60
+      Statistic: Maximum
+      Threshold: 0
+      Unit: Count
+
+Outputs:
+  TargetGroupWeb80:
+    Description: Target Group for PORTAL Servers on port 80
+    Value: !Ref TargetGroupWeb80
+    Export:
+      Name: !Sub "${AWS::StackName}-TargetGroupWeb80"
+  ALBArn:
+    Description: PORTAL ALB ARN
+    Value: !Ref ALB
+    Export:
+      Name: !Sub "${AWS::StackName}-ALBArn"
+  ALBDNS:
+    Description: PORTAL ALB DNS Name
+    Value: !GetAtt ALB.DNSName
+    Export:
+      Name: !Sub "${AWS::StackName}-ALBDNS"
+  SecGrpALB:
+    Description: PORTAL ALB Security Group ID
+    Value: !Ref SecGrpALB
+    Export:
+      Name: !Sub "${AWS::StackName}-SecGrpALB"
+

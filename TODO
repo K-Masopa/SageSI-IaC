@@ -1,0 +1,26 @@
+Log more to /ec2/boot/configuration
+Alert on failed boots
+
+ALB alarms
+ASG alarms - CloudWatch agent + enh monitoring + alarms
+RDS alarms
+
+---
+
+Params
+Params per env
+How to manage secrets
+
+Pipeline
+
+---
+
+
+
+notes
+
+asg spinup fresh 24/08
+
+initial   12:52:24
+unhealthy 12:55:52 [00:03:28]
+healthy   12:59:36 [00:07:12]

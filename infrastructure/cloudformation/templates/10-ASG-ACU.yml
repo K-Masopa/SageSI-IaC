@@ -1,0 +1,373 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "ZA - SBCPP - ASG - ACU stack"
+
+Parameters:
+  StackCore:
+    Description: Name of core stack to import values from
+    Type: String
+  StackVPC:
+    Description: Name of VPC stack to import values from
+    Type: String
+  StackS3:
+    Description: Name of S3 stack to import values from
+    Type: String
+  StackSNS:
+    Description: Name of SNS stack to import values from
+    Type: String
+  StackRDS:
+    Description: Name of RDS stack to import values from
+    Type: String
+  StackALB:
+    Description: Name of ALB stack to import values from
+    Type: String
+  StackFSX:
+    Description: Name of FSX stack to import values from
+    Type: String
+  AMIWindows:
+    Description: Windows_Server-2019-English-Full-Base-2021.08.11
+    Type: AWS::EC2::Image::Id
+  KeyPair:
+    Description: KeyPair Name
+    Type: AWS::EC2::KeyPair::KeyName
+  InstanceType:
+    Description: Instance Type
+    Type: String
+    AllowedValues:
+      - t3.medium
+      - t3.large
+      - m5.large
+      - m5.xlarge
+  DesiredCapacity:
+    Description: Number of servers to deploy
+    Type: String
+    Default: 1
+  ReleaseIdentifier:
+    Description: Name of release (used in userdata to force ASG updates)
+    Type: String
+
+Metadata:
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "Shared"
+        Parameters: 
+          - StackCore
+          - StackVPC
+          - StackS3
+          - StackRDS
+          - StackSNS
+          - StackALB
+          - StackFSX
+          
+      - 
+        Label: 
+          default: "Local"
+        Parameters: 
+          - AMIWindows
+          - KeyPair
+          - InstanceType
+          - DesiredCapacity
+
+Resources: 
+  IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      ManagedPolicyArns: # https://aws.amazon.com/blogs/mt/applying-managed-instance-policy-best-practices/
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+        - "arn:aws:iam::aws:policy/AmazonSSMDirectoryServiceAccess"
+        - "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+      Policies:
+         - 
+          PolicyName: s3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - 
+                Action:
+                  - s3:*
+                Resource: 
+                  - Fn::ImportValue: !Sub "${StackS3}-S3BucketDeploymentArn"
+                  - !Join 
+                    - ""
+                    - - Fn::ImportValue: !Sub "${StackS3}-S3BucketDeploymentArn"
+                      - "/*"
+                Effect: Allow
+              - 
+                Action:
+                  - s3:ListAllMyBuckets
+                Resource: "*"     
+                Effect: Allow
+         - 
+          PolicyName: secrets
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - 
+                Action:
+                  - secretsmanager:GetResourcePolicy
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:DescribeSecret
+                  - secretsmanager:ListSecretVersionIds
+                Resource: 
+                  - !Join 
+                    - ""
+                    - - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/"
+                      - Fn::ImportValue: !Sub "${StackCore}-EnvironmentLower"
+                      - "/activedirectory"
+                      - "-*"
+                Effect: Allow
+              - 
+                Action:
+                  - secretsmanager:ListSecrets
+                Resource: "*"
+                Effect: Allow
+         - 
+          PolicyName: cloudwatch
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - 
+                Action:
+                  - logs:PutRetentionPolicy
+                Resource: 
+                  - "*"
+                Effect: Allow
+      Path: "/"
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: IAMRole
+
+  LaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref AMIWindows
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPair
+      AssociatePublicIpAddress: False
+      IamInstanceProfile:
+        Ref: InstanceProfile
+      BlockDeviceMappings:
+        - 
+          DeviceName: "/dev/sda1"
+          Ebs: 
+            VolumeSize: 100
+      SecurityGroups: 
+        - !Ref SecGrpASG
+      UserData:
+        Fn::Base64: !Sub |
+          <powershell>
+          # cfn-init.exe -v --stack ${AWS::StackName} --resource LaunchConfiguration --configsets config --region ${AWS::Region}
+          cfn-signal.exe -e $LASTEXITCODE --stack ${AWS::StackName} --resource AutoscalingGroup --region ${AWS::Region}
+          </powershell>
+    Metadata: 
+      AWS::CloudFormation::Init:
+        configSets:
+          config:
+            - "WindowsFeatures"
+            - "MapFSx"
+            - "IIS"
+        WindowsFeatures:
+          files:
+            C:\\scripts\\WindowsFeatures.ps1:
+              content: |
+                Import-Module ServerManager
+                Write-Output "Installing Windows Features"
+                Install-WindowsFeature @("web-server","Web-Mgmt-Console","Web-Net-Ext45","Web-Asp-Net45","Web-ISAPI-Ext","Web-ISAPI-Filter","NET-Framework-45-ASPNET")
+
+                Write-Output "Uninstalling Windows Features"
+                Uninstall-WindowsFeature -Name FS-SMB1
+          commands:
+            execute:
+              command: "powershell.exe -file C:\\scripts\\WindowsFeatures.ps1 > C:\\scripts\\WindowsFeatures.log"
+              waitAfterCompletion: 5
+        MapFSx:
+          files:
+            C:\\scripts\\MapFSx.ps1:
+              content: !Sub 
+                - |
+                  Import-Module AWSPowerShell
+                  $SecretObj = (Get-SECSecretValue -SecretId ${Secret})
+                  [PSCustomObject]$Secret = ($SecretObj.SecretString  | ConvertFrom-Json)
+                  $password = $Secret.Password | ConvertTo-SecureString -asPlainText -Force
+                  $username = $Secret.UserID + "@" + $Secret.Domain
+                  $credential = New-Object System.Management.Automation.PSCredential($username, $password)
+                  New-PSDrive -Name Z -PSProvider FileSystem -Root "\\${FSX}\share" -Persist -Credential $credential -Scope Global
+                - FSX: 
+                    Fn::ImportValue: 
+                      !Sub "${StackFSX}-FileSystemDNS"
+                  Secret: !Join
+                    - ''
+                    - - "/"
+                      - Fn::ImportValue: !Sub "${StackCore}-EnvironmentLower"
+                      - "/"
+                      - "activedirectory"
+          commands:
+            execute:
+              command: "powershell.exe -file C:\\scripts\\MapFSx.ps1 > C:\\scripts\\MapFSx.log"
+              waitAfterCompletion: 5
+        IIS:
+          files:
+            C:\\scripts\\IIS.ps1:
+              content: !Sub 
+                - |
+                  Import-Module WebAdministration
+                  $siteName = "POC"
+                  $hostName = "poc.${Domain}"
+
+                  $appPool = "IIS:\AppPools\$siteName"
+                  $iisSite = "IIS:\Sites\$siteName"
+                  $siteDirectory = "C:\$siteName"
+
+                  Write-Output "Creating app pool $($appPool)"
+                  New-Item -Path $appPool
+                  
+                  Write-Output "Creating directory $($siteDirectory)"
+                  New-Item -ItemType directory -Path $siteDirectory -Force
+
+                  Write-Output "Creating IIS site $($siteName)"
+                  New-WebSite -Name $siteName -PhysicalPath $siteDirectory -Force
+
+                  Write-Output "Adding bindings to IIS site - all IPs, port 80, $($hostName)"
+                  Set-ItemProperty $iisSite -name  Bindings -value @(@{protocol="http";bindingInformation="*:80:*"},@{protocol="http";bindingInformation="*:80:$hostName"})
+
+                  Write-Output "Stopping default website"
+                  Stop-WebSite -Name "Default Web Site"
+                  Start-Sleep 10
+
+                  Invoke-RestMethod http://169.254.169.254/latest/meta-data/instance-id > C:\POC\index.html
+                  "<br />ACU" >> C:\POC\index.html
+
+                  Write-Output "Starting IIS site $($siteName)"
+                  Start-WebSite -Name $siteName
+                - Domain: 
+                    Fn::ImportValue: !Sub '${StackCore}-Domain'
+          commands:
+            execute:
+              command: "powershell.exe -file C:\\scripts\\IIS.ps1 > C:\\scripts\\IIS.log"
+              waitAfterCompletion: 5
+  
+  AutoscalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MaxBatchSize: 1
+        MinInstancesInService: !Ref DesiredCapacity
+        WaitOnResourceSignals: True
+        PauseTime: PT15M
+    CreationPolicy:
+      ResourceSignal:
+        Count: !Ref DesiredCapacity
+        Timeout: PT15M
+    Properties:
+      VPCZoneIdentifier: 
+        - Fn::ImportValue: !Sub "${StackVPC}-SubnetPrivate1"
+        - Fn::ImportValue: !Sub "${StackVPC}-SubnetPrivate2"
+        - Fn::ImportValue: !Sub "${StackVPC}-SubnetPrivate3"
+      LaunchConfigurationName: !Ref LaunchConfiguration
+      MaxSize: '12'
+      MinSize: '1'
+      DesiredCapacity: !Ref DesiredCapacity
+      TargetGroupARNs:
+        - Fn::ImportValue: !Sub "${StackALB}-TargetGroupWeb80"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "ASG"
+            - "ACU"
+          PropagateAtLaunch: True
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+          PropagateAtLaunch: True
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+          PropagateAtLaunch: True
+        - Key: Role
+          Value: ACU
+          PropagateAtLaunch: True
+        - Key: SSMEnabled
+          Value: 'True'
+          PropagateAtLaunch: True
+
+  SecGrpASG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SG"
+            - "ASG"
+            - "ACU"
+      GroupDescription: Allows access to the ACU ASG
+      VpcId:
+        Fn::ImportValue: !Sub "${StackVPC}-VPC"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SG"
+            - "ASG"
+            - "PORTAL"
+
+  SecGrpASGIngressALB:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref SecGrpASG
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: 
+        Fn::ImportValue: !Sub "${StackALB}-SecGrpALB"
+
+  SecGrpFSXIngressPortal:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId:
+        Fn::ImportValue: !Sub "${StackFSX}-SecGrpFSX"
+      IpProtocol: tcp
+      FromPort: 445
+      ToPort: 445
+      SourceSecurityGroupId: !Ref SecGrpASG
+
+  SecGrpRDSIngressPortal:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId:
+        Fn::ImportValue: !Sub "${StackRDS}-SecGrpRDS"
+      IpProtocol: tcp
+      FromPort: 1433
+      ToPort: 1433
+      SourceSecurityGroupId: !Ref SecGrpASG
+
+Outputs:
+  AutoscalingGroup:
+    Description: Portal AutoScaling Group ID
+    Value: !Ref AutoscalingGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-AutoscalingGroup"
+  SecGrpASG:
+    Description: Security Group ID - ASG - ACU
+    Value: !Ref SecGrpASG
+    Export:
+      Name: !Sub "${AWS::StackName}-SecGrpASG"

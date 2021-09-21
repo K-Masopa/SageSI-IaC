@@ -1,0 +1,34 @@
+[
+  {
+    "ParameterKey": "ProjectUpper",
+    "ParameterValue": "ZA-SBCPP"
+  },
+  {
+    "ParameterKey": "ProjectLower",
+    "ParameterValue": "za-sbcpp"
+  },
+  {
+    "ParameterKey": "EnvironmentUpper",
+    "ParameterValue": "QA"
+  },
+  {
+    "ParameterKey": "EnvironmentLower",
+    "ParameterValue": "qa"
+  },
+  {
+    "ParameterKey": "AZ1",
+    "ParameterValue": "a"
+  },
+  {
+    "ParameterKey": "AZ2",
+    "ParameterValue": "b"
+  },
+  {
+    "ParameterKey": "AZ3",
+    "ParameterValue": "c"
+  },
+  {
+    "ParameterKey": "Domain",
+    "ParameterValue": "qa.sagepayrollprofessional.com"
+  }
+]

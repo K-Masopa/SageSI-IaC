@@ -1,0 +1,10 @@
+[
+  {
+    "ParameterKey": "StackCore",
+    "ParameterValue": "#{StackCore}#"
+  },
+  {
+    "ParameterKey": "CIDRPrefix",
+    "ParameterValue": "#{CIDRPrefix}#"
+  }
+]
