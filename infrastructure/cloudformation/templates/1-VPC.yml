@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'ZA - SBCSAGESI - VPC stack'
+Description: 'ZA - SAGESI - VPC stack'
 
 Parameters:
   StackCore:

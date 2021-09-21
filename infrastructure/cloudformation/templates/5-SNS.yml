@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'ZA - SBCPP - SNS stack'
+Description: 'ZA - SAGESI - SNS stack'
 
 Parameters:
   StackCore:

@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "ZA - SBCPP - ALB PORTAL stack"
+Description: "ZA - SAGESI - ALB PORTAL stack"
 
 Parameters:
   StackCore:
@@ -28,7 +28,6 @@ Metadata:
         Parameters: 
           - StackCore
           - StackVPC
-          - StackS3
           - StackSNS
       - 
         Label: 

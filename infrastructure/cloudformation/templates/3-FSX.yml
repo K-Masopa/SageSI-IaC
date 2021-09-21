@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "ZA - SBCPP - FSX stack"
+Description: "ZA - SAGESI - FSX stack"
 
 Parameters:
   StackCore:
