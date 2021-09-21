@@ -9,9 +9,6 @@ Parameters:
   StackVPC:
     Description: Name of VPC stack to import values from
     Type: String
-  StackS3:
-    Description: Name of S3 stack to import values from
-    Type: String
   StackSNS:
     Description: Name of SNS stack to import values from
     Type: String
