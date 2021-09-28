@@ -9,14 +9,8 @@ Parameters:
   StackVPC:
     Description: Name of VPC stack to import values from
     Type: String
-  StackS3:
-    Description: Name of S3 stack to import values from
-    Type: String
-  StackSNS:
+   StackSNS:
     Description: Name of SNS stack to import values from
-    Type: String
-  StackRDS:
-    Description: Name of RDS stack to import values from
     Type: String
   StackALB:
     Description: Name of ALB stack to import values from
@@ -55,8 +49,6 @@ Metadata:
         Parameters: 
           - StackCore
           - StackVPC
-          - StackS3
-          - StackRDS
           - StackSNS
           - StackALB
           - StackFSX
