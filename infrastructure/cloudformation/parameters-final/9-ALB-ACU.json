@@ -1,0 +1,22 @@
+[
+  {
+    "ParameterKey": "StackCore",
+    "ParameterValue": "SBCPP-QA-CORE"
+  },
+  {
+    "ParameterKey": "StackSNS",
+    "ParameterValue": "SBCPP-QA-SNS"
+  },
+  {
+    "ParameterKey": "StackS3",
+    "ParameterValue": "SBCPP-QA-S3"
+  },
+  {
+    "ParameterKey": "StackVPC",
+    "ParameterValue": "SBCPP-QA-VPC"
+  },
+  {
+    "ParameterKey": "CertificateArn",
+    "ParameterValue": "arn:aws:acm:af-south-1:211420905985:certificate/1c146232-bde9-4f65-8fce-452890d85fea"
+  }
+]

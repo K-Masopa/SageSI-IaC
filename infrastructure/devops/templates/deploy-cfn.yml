@@ -1,0 +1,155 @@
+parameters:
+- name: environmentName
+  type: string
+  default: ""
+- name: dependOn
+  type: string
+  default: ""  
+- name: awsCredential
+  type: string
+  default: ""
+- name: awsRegion
+  type: string
+  default: ""
+
+steps:
+- task: DownloadPipelineArtifact@2
+  inputs:
+    source: 'current'
+    artifact: 'drop'
+    path: '$(System.DefaultWorkingDirectory)'
+
+- task: PowerShell@2
+  displayName: 'Get Parameters from Files'
+  inputs:
+    filePath: 'infrastructure/cloudformation/Get-EnvironmentParams.ps1'
+    arguments: '-Environment ${{ parameters.environmentName }}'
+    failOnStderr: true
+    workingDirectory: 'infrastructure/cloudformation/'
+
+- task: replacetokens@4
+  displayName: 'Get Parameters from Variable Group'
+  inputs:
+    rootDirectory: 'infrastructure/cloudformation/parameters-final/'
+    targetFiles: '**'
+    encoding: 'auto'
+    tokenPattern: 'custom'
+    tokenPrefix: '%{'
+    tokenSuffix: '}%'
+    writeBOM: true
+    actionOnMissing: 'warn'
+    keepToken: false
+    actionOnNoFiles: 'warn'
+    enableTransforms: false
+    useLegacyPattern: false
+    enableTelemetry: true
+
+- task: CloudFormationCreateOrUpdateStack@1
+  displayName: CFN - Deploy Core Stack
+  inputs:
+    awsCredentials: ${{ parameters.awsCredential }}
+    regionName: ${{ parameters.awsRegion }}
+    stackName: SBCPP-${{ parameters.environmentName }}-CORE
+    templateSource: file
+    templateFile: infrastructure/cloudformation/templates/0-CORE.yml
+    templateParametersFile: infrastructure/cloudformation/parameters-final/0-CORE.json
+
+- task: CloudFormationCreateOrUpdateStack@1
+  displayName: CFN - Deploy VPC Stack
+  inputs:
+    awsCredentials: ${{ parameters.awsCredential }}
+    regionName: ${{ parameters.awsRegion }}
+    stackName: SBCPP-${{ parameters.environmentName }}-VPC
+    templateSource: file
+    templateFile: infrastructure/cloudformation/templates/1-VPC.yml
+    templateParametersFile: infrastructure/cloudformation/parameters-final/1-VPC.json
+
+- task: CloudFormationCreateOrUpdateStack@1
+  displayName: CFN - Deploy AD Stack
+  inputs:
+    awsCredentials: ${{ parameters.awsCredential }}
+    regionName: ${{ parameters.awsRegion }}
+    stackName: SBCPP-${{ parameters.environmentName }}-AD
+    templateSource: file
+    templateFile: infrastructure/cloudformation/templates/2-AD.yml
+    templateParametersFile: infrastructure/cloudformation/parameters-final/2-AD.json
+
+- task: CloudFormationCreateOrUpdateStack@1
+  displayName: CFN - Deploy FSX Stack
+  inputs:
+    awsCredentials: ${{ parameters.awsCredential }}
+    regionName: ${{ parameters.awsRegion }}
+    stackName: SBCPP-${{ parameters.environmentName }}-FSX
+    templateSource: file
+    templateFile: infrastructure/cloudformation/templates/3-FSX.yml
+    templateParametersFile: infrastructure/cloudformation/parameters-final/3-FSX.json
+
+- task: CloudFormationCreateOrUpdateStack@1
+  displayName: CFN - Deploy S3 Stack
+  inputs:
+    awsCredentials: ${{ parameters.awsCredential }}
+    regionName: ${{ parameters.awsRegion }}
+    stackName: SBCPP-${{ parameters.environmentName }}-S3
+    templateSource: file
+    templateFile: infrastructure/cloudformation/templates/4-S3.yml
+    templateParametersFile: infrastructure/cloudformation/parameters-final/4-S3.json
+
+- task: CloudFormationCreateOrUpdateStack@1
+  displayName: CFN - Deploy SNS Stack
+  inputs:
+    awsCredentials: ${{ parameters.awsCredential }}
+    regionName: ${{ parameters.awsRegion }}
+    stackName: SBCPP-${{ parameters.environmentName }}-SNS
+    templateSource: file
+    templateFile: infrastructure/cloudformation/templates/5-SNS.yml
+    templateParametersFile: infrastructure/cloudformation/parameters-final/5-SNS.json
+
+- task: CloudFormationCreateOrUpdateStack@1
+  displayName: CFN - Deploy RDS Stack
+  inputs:
+    awsCredentials: ${{ parameters.awsCredential }}
+    regionName: ${{ parameters.awsRegion }}
+    stackName: SBCPP-${{ parameters.environmentName }}-RDS
+    templateSource: file
+    templateFile: infrastructure/cloudformation/templates/6-RDS.yml
+    templateParametersFile: infrastructure/cloudformation/parameters-final/6-RDS.json
+
+- task: CloudFormationCreateOrUpdateStack@1
+  displayName: CFN - Deploy ALB Portal Stack
+  inputs:
+    awsCredentials: ${{ parameters.awsCredential }}
+    regionName: ${{ parameters.awsRegion }}
+    stackName: SBCPP-${{ parameters.environmentName }}-ALB-PORTAL
+    templateSource: file
+    templateFile: infrastructure/cloudformation/templates/7-ALB-PORTAL.yml
+    templateParametersFile: infrastructure/cloudformation/parameters-final/7-ALB-PORTAL.json
+
+- task: CloudFormationCreateOrUpdateStack@1
+  displayName: CFN - Deploy ASG Portal Stack
+  inputs:
+    awsCredentials: ${{ parameters.awsCredential }}
+    regionName: ${{ parameters.awsRegion }}
+    stackName: SBCPP-${{ parameters.environmentName }}-ASG-PORTAL
+    templateSource: file
+    templateFile: infrastructure/cloudformation/templates/8-ASG-PORTAL.yml
+    templateParametersFile: infrastructure/cloudformation/parameters-final/8-ASG-PORTAL.json
+
+- task: CloudFormationCreateOrUpdateStack@1
+  displayName: CFN - Deploy ALB Portal Stack
+  inputs:
+    awsCredentials: ${{ parameters.awsCredential }}
+    regionName: ${{ parameters.awsRegion }}
+    stackName: SBCPP-${{ parameters.environmentName }}-ALB-ACU
+    templateSource: file
+    templateFile: infrastructure/cloudformation/templates/9-ALB-ACU.yml
+    templateParametersFile: infrastructure/cloudformation/parameters-final/9-ALB-ACU.json
+
+- task: CloudFormationCreateOrUpdateStack@1
+  displayName: CFN - Deploy ASG Portal Stack
+  inputs:
+    awsCredentials: ${{ parameters.awsCredential }}
+    regionName: ${{ parameters.awsRegion }}
+    stackName: SBCPP-${{ parameters.environmentName }}-ASG-ACU
+    templateSource: file
+    templateFile: infrastructure/cloudformation/templates/10-ASG-ACU.yml
+    templateParametersFile: infrastructure/cloudformation/parameters-final/10-ASG-ACU.json

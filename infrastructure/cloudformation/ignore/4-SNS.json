@@ -1,0 +1,6 @@
+[
+    {
+        "ParameterKey": "StackCore",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-CORE"
+    }
+]

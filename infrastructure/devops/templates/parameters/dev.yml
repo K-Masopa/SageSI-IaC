@@ -1,0 +1,4 @@
+variables:
+  environmentName: "DEV"
+  awsCredential: "AWS-Dev"
+  awsRegion: "af-south-1"

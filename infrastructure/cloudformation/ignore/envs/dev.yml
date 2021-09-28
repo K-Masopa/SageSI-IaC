@@ -1,0 +1,20 @@
+# Core
+ProjectUpper: SBCPP
+ProjectLower: sbcpp
+EnvironmentUpper: DEV
+EnvironmentLower: dev
+Domain: dev.sagepayrollprofessional.com
+AZ1: A
+AZ2: B
+AZ3: C
+
+# VPC
+CIDRPrefix: 10.25
+ThreeAZs: false
+
+# ALB
+CertificateArn: x
+
+
+
+9Y;k7jff%]28^SZL6972

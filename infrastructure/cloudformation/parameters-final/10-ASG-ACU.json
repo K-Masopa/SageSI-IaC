@@ -1,0 +1,50 @@
+[
+  {
+    "ParameterKey": "StackCore",
+    "ParameterValue": "SBCPP-QA-CORE"
+  },
+  {
+    "ParameterKey": "StackVPC",
+    "ParameterValue": "SBCPP-QA-VPC"
+  },
+  {
+    "ParameterKey": "StackFSX",
+    "ParameterValue": "SBCPP-QA-FSX"
+  },
+  {
+    "ParameterKey": "StackS3",
+    "ParameterValue": "SBCPP-QA-S3"
+  },
+  {
+    "ParameterKey": "StackSNS",
+    "ParameterValue": "SBCPP-QA-SNS"
+  },
+  {
+    "ParameterKey": "StackRDS",
+    "ParameterValue": "SBCPP-QA-RDS"
+  },
+  {
+    "ParameterKey": "StackALB",
+    "ParameterValue": "SBCPP-QA-ALB-PORTAL"
+  },
+  {
+    "ParameterKey": "KeyPair",
+    "ParameterValue": "SBCPP-QA-KEYPAIR"
+  },
+  {
+    "ParameterKey": "DesiredCapacity",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t3.medium"
+  },
+  {
+    "ParameterKey": "ReleaseIdentifier",
+    "ParameterValue": "20210820-1354"
+  },
+  {
+    "ParameterKey": "AMIWindows",
+    "ParameterValue": "ami-0afe63ed03f4e0432"
+  }
+]

@@ -1,0 +1,26 @@
+[
+    {
+        "ParameterKey": "StackCore",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-CORE"
+    },
+    {
+        "ParameterKey": "StackVPC",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-VPC"
+    },
+    {
+        "ParameterKey": "StackSG",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-SG"
+    },
+    {
+        "ParameterKey": "StackS3",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-S3"
+    },
+    {
+        "ParameterKey": "StackSNS",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-SNS"
+    },
+    {
+        "ParameterKey": "CertificateArn",
+        "ParameterValue": "#{CertificateArn}"
+    }
+]

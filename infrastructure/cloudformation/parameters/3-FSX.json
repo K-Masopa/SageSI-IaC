@@ -1,0 +1,14 @@
+[
+  {
+    "ParameterKey": "StackCore",
+    "ParameterValue": "#{StackCore}#"
+  },
+  {
+    "ParameterKey": "StackVPC",
+    "ParameterValue": "#{StackVPC}#"
+  },
+  {
+    "ParameterKey": "StackAD",
+    "ParameterValue": "#{StackAD}#"
+  }
+]

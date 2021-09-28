@@ -1,0 +1,145 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "ZA - SBCPP - Core stack"
+
+Parameters:
+  StackCore:
+    Description: Name of core stack to import values from
+    Type: String
+  StackVPC:
+    Description: Name of VPC stack to import values from
+    Type: String
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Shared"
+        Parameters:
+          - StackCore
+          - StackVPC
+
+Resources:
+  SecGroupWebAlb:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join
+        - "-"
+        - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+          - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+          - "SG"
+          - "WebALB"
+      GroupDescription: Web Server ALB
+      VpcId:
+        Fn::ImportValue: !Sub "${StackVPC}-VPC"
+      Tags:
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+              - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+              - "SG"
+              - "Web"
+              - "ALB"
+        - Key: Environment
+          Value:
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value:
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: VPC
+
+  SecGroupWebAlbIngress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      FromPort: 443
+      ToPort: 443
+      GroupId: !Ref SecGroupWebAlb
+      IpProtocol: TCP
+  SecGroupWebAlbIngress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      FromPort: 80
+      ToPort: 80
+      GroupId: !Ref SecGroupWebAlb
+      IpProtocol: TCP
+
+  SecGroupWeb:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join
+        - "-"
+        - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+          - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+          - "SG"
+          - "Web"
+      GroupDescription: Proxy servers
+      VpcId:
+        Fn::ImportValue: !Sub "${StackVPC}-VPC"
+      Tags:
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+              - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+              - "SG"
+              - "Web"
+        - Key: Environment
+          Value:
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value:
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: VPC
+
+  SecGroupWebIngressProxy80:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      SourceSecurityGroupId: !GetAtt SecGroupWeb.GroupId
+      FromPort: 80
+      ToPort: 80
+      GroupId: !Ref SecGroupWeb
+      IpProtocol: TCP
+
+  SecGroupWebIngressProxy443:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      SourceSecurityGroupId: !GetAtt SecGroupWeb.GroupId
+      FromPort: 443
+      ToPort: 443
+      GroupId: !Ref SecGroupWeb
+      IpProtocol: TCP
+
+  SecGroupWebIngressElb80:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      SourceSecurityGroupId: !GetAtt SecGroupWebAlb.GroupId
+      FromPort: 80
+      ToPort: 80
+      GroupId: !Ref SecGroupWeb
+      IpProtocol: TCP
+
+  SecGroupWebIngressElb443:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      SourceSecurityGroupId: !GetAtt SecGroupWebAlb.GroupId
+      FromPort: 443
+      ToPort: 443
+      GroupId: !Ref SecGroupWeb
+      IpProtocol: TCP
+
+Outputs:
+  SecGroupWeb:
+    Description: Security Group ID - Web servers
+    Value: !GetAtt SecGroupWeb.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}-SecGroupWeb"
+  SecGroupWebAlb:
+    Description: Security Group ID - Web ALB
+    Value: !GetAtt SecGroupWebAlb.GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}-SecGroupWebAlb"

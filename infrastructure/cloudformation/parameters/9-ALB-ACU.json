@@ -1,0 +1,22 @@
+[
+  {
+    "ParameterKey": "StackCore",
+    "ParameterValue": "#{StackCore}#"
+  },
+  {
+    "ParameterKey": "StackSNS",
+    "ParameterValue": "#{StackSNS}#"
+  },
+  {
+    "ParameterKey": "StackS3",
+    "ParameterValue": "#{StackS3}#"
+  },
+  {
+    "ParameterKey": "StackVPC",
+    "ParameterValue": "#{StackVPC}#"
+  },
+  {
+    "ParameterKey": "CertificateArn",
+    "ParameterValue": "#{CertificateArn}#"
+  }
+]

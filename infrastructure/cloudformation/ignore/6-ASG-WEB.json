@@ -1,0 +1,62 @@
+[
+    {
+        "ParameterKey": "StackCore",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-CORE"
+    },
+    {
+        "ParameterKey": "StackVPC",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-VPC"
+    },
+    {
+        "ParameterKey": "StackSG",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-SG"
+    },
+    {
+        "ParameterKey": "StackS3",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-S3"
+    },
+    {
+        "ParameterKey": "StackSNS",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-SNS"
+    },
+    {
+        "ParameterKey": "StackALB",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-ALB"
+    },
+    {
+        "ParameterKey": "StackCodePipelineAdmin",
+        "ParameterValue": "#{ProjectUpper}-#{EnvironmentUpper}-CODEPIPELINE-ADMIN"
+    },
+    {
+        "ParameterKey": "AMIWindows",
+        "ParameterValue": "#{Admin.AMI}"
+    },
+    {
+        "ParameterKey": "KeyPair",
+        "ParameterValue": "#{Admin.KeyPair}"
+    },
+    {
+        "ParameterKey": "InstanceType",
+        "ParameterValue": "#{Admin.InstanceType}"
+    },
+    {
+        "ParameterKey": "DesiredCapacity",
+        "ParameterValue": "#{Admin.DesiredCapacity}"
+    },
+    {
+        "ParameterKey": "ReleaseIdentifier",
+        "ParameterValue": "#{Octopus.Release.Number}"
+    },
+    {
+        "ParameterKey": "SumoPackage",
+        "ParameterValue": "#{SumoPackage.Windows}"
+    },
+    {
+        "ParameterKey": "SumoAccessId",
+        "ParameterValue": "#{SumoAccessId}"
+    },
+    {
+        "ParameterKey": "SumoAccessKey",
+        "ParameterValue": "#{SumoAccessKey}"
+    }
+]

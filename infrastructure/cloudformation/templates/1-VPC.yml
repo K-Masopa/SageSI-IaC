@@ -1,0 +1,698 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ZA - SAGESI - VPC stack'
+
+Parameters:
+  StackCore:
+    Description: Name of core stack to import values from
+    Type: String
+  CIDRPrefix:
+    Description: First two octets of CIDR block (e.g. 10.25)
+    Type: String
+
+Metadata:
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "Shared"
+        Parameters: 
+          - StackCore
+      -
+        Label:
+          default: "VPC"
+        Parameters:
+          - CIDRPrefix
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Sub "${CIDRPrefix}.0.0/16"
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "VPC"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: VPC
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "IGW"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: IGW
+          
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  EIPNATGW1:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  EIPNATGW2:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  EIPNATGW3:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  NATGW1:
+    DependsOn: AttachGateway
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt EIPNATGW1.AllocationId
+      SubnetId: !Ref SubnetPublic1
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "NATGW"
+            - "1"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: NATGW
+  NATGW2:
+    DependsOn: AttachGateway
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt EIPNATGW2.AllocationId
+      SubnetId: !Ref SubnetPublic2
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "NATGW"
+            - "2"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: NATGW
+  NATGW3:
+    DependsOn: AttachGateway
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt EIPNATGW3.AllocationId
+      SubnetId: !Ref SubnetPublic3
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "NATGW"
+            - "3"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: NATGW
+
+  SubnetPublic1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Join
+        - ''
+        - - !Sub "${AWS::Region}"
+          - Fn::ImportValue: !Sub "${StackCore}-AZ1"
+      VpcId: !Ref VPC
+      CidrBlock: !Sub "${CIDRPrefix}.1.0/24"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SUB"
+            - "PUB"
+            - "1"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: PUBLICSUBNET
+  SubnetPublic2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Join
+        - ''
+        - - !Sub "${AWS::Region}"
+          - Fn::ImportValue: !Sub "${StackCore}-AZ2"
+      VpcId: !Ref VPC
+      CidrBlock: !Sub "${CIDRPrefix}.2.0/24"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SUB"
+            - "PUB"
+            - "2"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: PUBLICSUBNET
+  SubnetPublic3:
+    Type: AWS::EC2::Subnet 
+    Properties:
+      AvailabilityZone: !Join
+        - ''
+        - - !Sub "${AWS::Region}"
+          - Fn::ImportValue: !Sub "${StackCore}-AZ3"
+      VpcId: !Ref VPC
+      CidrBlock: !Sub "${CIDRPrefix}.3.0/24"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SUB"
+            - "PUB"
+            - "3"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: PUBLICSUBNET
+  
+  SubnetPrivate1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Join
+        - ''
+        - - !Sub "${AWS::Region}"
+          - Fn::ImportValue: !Sub "${StackCore}-AZ1"
+      VpcId: !Ref VPC
+      CidrBlock: !Sub "${CIDRPrefix}.10.0/24"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SUB"
+            - "PVT"
+            - "1"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: PRIVATESUBNET
+  SubnetPrivate2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Join
+        - ''
+        - - !Sub "${AWS::Region}"
+          - Fn::ImportValue: !Sub "${StackCore}-AZ2"
+      VpcId: !Ref VPC
+      CidrBlock: !Sub "${CIDRPrefix}.11.0/24"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SUB"
+            - "PVT"
+            - "2"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: PRIVATESUBNET
+  SubnetPrivate3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Join
+        - ''
+        - - !Sub "${AWS::Region}"
+          - Fn::ImportValue: !Sub "${StackCore}-AZ3"
+      VpcId: !Ref VPC
+      CidrBlock: !Sub "${CIDRPrefix}.12.0/24"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SUB"
+            - "PVT"
+            - "3"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: PRIVATESUBNET
+
+  SubnetManagement1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Join
+        - ''
+        - - !Sub "${AWS::Region}"
+          - Fn::ImportValue: !Sub "${StackCore}-AZ1"
+      VpcId: !Ref VPC
+      CidrBlock: !Sub "${CIDRPrefix}.20.0/24"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SUB"
+            - "MGMT"
+            - "1"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: MGMTSUBNET
+  SubnetManagement2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Join
+        - ''
+        - - !Sub "${AWS::Region}"
+          - Fn::ImportValue: !Sub "${StackCore}-AZ2"
+      VpcId: !Ref VPC
+      CidrBlock: !Sub "${CIDRPrefix}.21.0/24"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SUB"
+            - "MGMT"
+            - "2"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: MGMTSUBNET
+  SubnetManagement3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Join
+        - ''
+        - - !Sub "${AWS::Region}"
+          - Fn::ImportValue: !Sub "${StackCore}-AZ3"
+      VpcId: !Ref VPC
+      CidrBlock: !Sub "${CIDRPrefix}.22.0/24"
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "SUB"
+            - "MGMT"
+            - "3"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: MGMTSUBNET
+
+  RouteTablePublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "RTB"
+            - "PUB"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: PUBLICROUTETABLE
+  RouteTablePrivate1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "RTB"
+            - "PVT"
+            - "1"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: PRIVATEROUTETABLE
+  RouteTablePrivate2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "RTB"
+            - "PVT"
+            - "2"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: PRIVATEROUTETABLE
+  RouteTablePrivate3:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "RTB"
+            - "PVT"
+            - "3"
+        - Key: Environment
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+        - Key: Project
+          Value: 
+            Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+        - Key: Role
+          Value: PRIVATEROUTETABLE
+  
+  RoutePublic:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePublic
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  RouteNATGW1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGW1
+  RouteNATGW2:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGW2
+  RouteNATGW3:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTablePrivate3
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGW3
+  
+  RouteAssociationPublic1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublic1
+      RouteTableId: !Ref RouteTablePublic
+  RouteAssociationPublic2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublic2
+      RouteTableId: !Ref RouteTablePublic
+  RouteAssociationPublic3:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublic3
+      RouteTableId: !Ref RouteTablePublic
+ 
+  RouteAssociationPrivate1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPrivate1
+      RouteTableId: !Ref RouteTablePrivate1
+  RouteAssociationPrivate2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPrivate2
+      RouteTableId: !Ref RouteTablePrivate2
+  RouteAssociationPrivate3:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPrivate3
+      RouteTableId: !Ref RouteTablePrivate3
+
+  RouteAssociationManagement1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetManagement1
+      RouteTableId: !Ref RouteTablePrivate1
+  RouteAssociationManagement2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetManagement2
+      RouteTableId: !Ref RouteTablePrivate2
+  RouteAssociationManagement3:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetManagement3
+      RouteTableId: !Ref RouteTablePrivate3
+
+  PrefixListCloudflareIPV4:
+    Type: AWS::EC2::PrefixList
+    Properties:
+      PrefixListName: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "PFL"
+            - "CLOUDFLARE"
+            - "IPV4"
+      AddressFamily: "IPv4"
+      MaxEntries: 20
+      Entries:
+        - Cidr: "173.245.48.0/20"
+          Description: "CloudFlare"
+        - Cidr: "103.21.244.0/22"
+          Description: "CloudFlare"
+        - Cidr: "103.22.200.0/22"
+          Description: "CloudFlare"
+        - Cidr: "103.31.4.0/22"
+          Description: "CloudFlare"
+        - Cidr: "141.101.64.0/18"
+          Description: "CloudFlare"
+        - Cidr: "108.162.192.0/18"
+          Description: "CloudFlare"
+        - Cidr: "190.93.240.0/20"
+          Description: "CloudFlare"
+        - Cidr: "188.114.96.0/20"
+          Description: "CloudFlare"
+        - Cidr: "197.234.240.0/22"
+          Description: "CloudFlare"
+        - Cidr: "198.41.128.0/17"
+          Description: "CloudFlare"
+        - Cidr: "162.158.0.0/15"
+          Description: "CloudFlare"
+        - Cidr: "104.16.0.0/13"
+          Description: "CloudFlare"
+        - Cidr: "104.24.0.0/14"
+          Description: "CloudFlare"
+        - Cidr: "172.64.0.0/13"
+          Description: "CloudFlare"
+        - Cidr: "131.0.72.0/22"
+          Description: "CloudFlare"
+      Tags:
+        - Key: "Name"
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "PFL"
+            - "CLOUDFLARE"
+            - "IPV4"
+
+  PrefixListCloudflareIPV6:
+    Type: AWS::EC2::PrefixList
+    Properties:
+      PrefixListName: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "PFL"
+            - "CLOUDFLARE"
+            - "IPV6"
+      AddressFamily: "IPv6"
+      MaxEntries: 10
+      Entries:
+        - Cidr: "2400:cb00::/32"
+          Description: "CloudFlare"
+        - Cidr: "2606:4700::/32"
+          Description: "CloudFlare"
+        - Cidr: "2803:f800::/32"
+          Description: "CloudFlare"
+        - Cidr: "2405:b500::/32"
+          Description: "CloudFlare"
+        - Cidr: "2405:8100::/32"
+          Description: "CloudFlare"
+        - Cidr: "2a06:98c0::/29"
+          Description: "CloudFlare"
+        - Cidr: "2c0f:f248::/32"
+          Description: "CloudFlare"
+      Tags:
+        - Key: "Name"
+          Value: !Join
+          - '-'
+          - - Fn::ImportValue: !Sub "${StackCore}-ProjectUpper"
+            - Fn::ImportValue: !Sub "${StackCore}-EnvironmentUpper"
+            - "PFL"
+            - "CLOUDFLARE"
+            - "IPV6"
+
+Outputs:
+  VPC:
+    Description: VPC ID
+    Value: !Ref VPC
+    Export:
+      Name: !Sub "${AWS::StackName}-VPC"
+  SubnetPublic1:
+    Description: Public Subnet 1
+    Value: !Ref SubnetPublic1
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPublic1"
+  SubnetPublic2:
+    Description: Public Subnet 2
+    Value: !Ref SubnetPublic2
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPublic2"
+  SubnetPublic3:
+    Description: Public Subnet 3
+    Value: !Ref SubnetPublic3
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPublic3"
+  SubnetPrivate1:
+    Description: Private Subnet 1
+    Value: !Ref SubnetPrivate1
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPrivate1"
+  SubnetPrivate2:
+    Description: Private Subnet 2
+    Value: !Ref SubnetPrivate2
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPrivate2"
+  SubnetPrivate3:
+    Description: Private Subnet 3
+    Value: !Ref SubnetPrivate3
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetPrivate3"
+  SubnetManagement1:
+    Description: Management Subnet 1
+    Value: !Ref SubnetManagement1
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetManagement1"
+  SubnetManagement2:
+    Description: Management Subnet 2
+    Value: !Ref SubnetManagement2
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetManagement2"
+  SubnetManagement3:
+    Description: Management Subnet 3
+    Value: !Ref SubnetManagement3
+    Export:
+      Name: !Sub "${AWS::StackName}-SubnetManagement3"
+  PrefixListCloudflareIPV4:
+    Description: VPC Prefix List for Cloudflare IPV4
+    Value: !Ref PrefixListCloudflareIPV4
+    Export:
+      Name: !Sub "${AWS::StackName}-PrefixListCloudflareIPV4"
+  PrefixListCloudflareIPV6:
+    Description: VPC Prefix List for Cloudflare IPV6
+    Value: !Ref PrefixListCloudflareIPV6
+    Export:
+      Name: !Sub "${AWS::StackName}-PrefixListCloudflareIPV6"

@@ -1,0 +1,50 @@
+trigger:
+  branches:
+    include:
+      - main
+      - feat/*
+  paths:
+    include:
+      - 'ami/*'
+
+stages:
+- stage: build
+  jobs:
+  - job: "Build_Portal"
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: PackerTool@0
+        inputs:
+          version: '1.7.5'
+      - task: Packer@1
+        inputs:
+          connectedServiceType: 'aws'
+          connectedServiceAWS: 'AWS-Dev'
+          templatePath: 'ami/packer/portal/'
+          command: 'init'
+      - task: Packer@1
+        inputs:
+          connectedServiceType: 'aws'
+          connectedServiceAWS: 'AWS-Dev'
+          templatePath: 'ami/packer/portal/'
+          command: 'build'
+  - job: "Build_ACU"
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: PackerTool@0
+        inputs:
+          version: '1.7.5'
+      - task: Packer@1
+        inputs:
+          connectedServiceType: 'aws'
+          connectedServiceAWS: 'AWS-Dev'
+          templatePath: 'ami/packer/acu/'
+          command: 'init'
+      - task: Packer@1
+        inputs:
+          connectedServiceType: 'aws'
+          connectedServiceAWS: 'AWS-Dev'
+          templatePath: 'ami/packer/acu/'
+          command: 'build'
