@@ -1,0 +1,14 @@
+[
+  {
+    "ParameterKey": "StackCore",
+    "ParameterValue": "SageSI-QA-CORE"
+  },
+  {
+    "ParameterKey": "StackVPC",
+    "ParameterValue": "SageSI-QA-VPC"
+  },
+  {
+    "ParameterKey": "StackAD",
+    "ParameterValue": "SageSI-QA-AD"
+  }
+]
