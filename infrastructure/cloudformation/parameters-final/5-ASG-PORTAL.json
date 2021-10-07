@@ -21,7 +21,7 @@
   },
   {
     "ParameterKey": "KeyPair",
-    "ParameterValue": "SageSIQA-KEYPAIR"
+    "ParameterValue": "SageSI-QA-KEYPAIR"
   },
   {
     "ParameterKey": "DesiredCapacity",
