@@ -1,35 +1,27 @@
 [
   {
     "ParameterKey": "StackCore",
-    "ParameterValue": "SBCPP-QA-CORE"
+    "ParameterValue": "SageSI-QA-CORE"
   },
   {
     "ParameterKey": "StackVPC",
-    "ParameterValue": "SBCPP-QA-VPC"
+    "ParameterValue": "SageSI-QA-VPC"
   },
   {
     "ParameterKey": "StackFSX",
-    "ParameterValue": "SBCPP-QA-FSX"
-  },
-  {
-    "ParameterKey": "StackS3",
-    "ParameterValue": "SBCPP-QA-S3"
+    "ParameterValue": "SageSI-QA-FSX"
   },
   {
     "ParameterKey": "StackSNS",
-    "ParameterValue": "SBCPP-QA-SNS"
-  },
-  {
-    "ParameterKey": "StackRDS",
-    "ParameterValue": "SBCPP-QA-RDS"
+    "ParameterValue": "SageSI-QA-SNS"
   },
   {
     "ParameterKey": "StackALB",
-    "ParameterValue": "SBCPP-QA-ALB-PORTAL"
+    "ParameterValue": "SageSI-QA-ALB-PORTAL"
   },
   {
     "ParameterKey": "KeyPair",
-    "ParameterValue": "SBCPP-QA-KEYPAIR"
+    "ParameterValue": "SageSIQA-KEYPAIR"
   },
   {
     "ParameterKey": "DesiredCapacity",
