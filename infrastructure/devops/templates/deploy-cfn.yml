@@ -64,15 +64,6 @@ steps:
     templateFile: infrastructure/cloudformation/templates/1-VPC.yml
     templateParametersFile: infrastructure/cloudformation/parameters-final/1-VPC.json
 
-- task: CloudFormationCreateOrUpdateStack@1
-  displayName: CFN - Deploy AD Stack
-  inputs:
-    awsCredentials: ${{ parameters.awsCredential }}
-    regionName: ${{ parameters.awsRegion }}
-    stackName: SBCPP-${{ parameters.environmentName }}-AD
-    templateSource: file
-    templateFile: infrastructure/cloudformation/templates/2-AD.yml
-    templateParametersFile: infrastructure/cloudformation/parameters-final/2-AD.json
 
 - task: CloudFormationCreateOrUpdateStack@1
   displayName: CFN - Deploy FSX Stack
@@ -84,15 +75,6 @@ steps:
     templateFile: infrastructure/cloudformation/templates/3-FSX.yml
     templateParametersFile: infrastructure/cloudformation/parameters-final/3-FSX.json
 
-- task: CloudFormationCreateOrUpdateStack@1
-  displayName: CFN - Deploy S3 Stack
-  inputs:
-    awsCredentials: ${{ parameters.awsCredential }}
-    regionName: ${{ parameters.awsRegion }}
-    stackName: SBCPP-${{ parameters.environmentName }}-S3
-    templateSource: file
-    templateFile: infrastructure/cloudformation/templates/4-S3.yml
-    templateParametersFile: infrastructure/cloudformation/parameters-final/4-S3.json
 
 - task: CloudFormationCreateOrUpdateStack@1
   displayName: CFN - Deploy SNS Stack
@@ -104,15 +86,6 @@ steps:
     templateFile: infrastructure/cloudformation/templates/5-SNS.yml
     templateParametersFile: infrastructure/cloudformation/parameters-final/5-SNS.json
 
-- task: CloudFormationCreateOrUpdateStack@1
-  displayName: CFN - Deploy RDS Stack
-  inputs:
-    awsCredentials: ${{ parameters.awsCredential }}
-    regionName: ${{ parameters.awsRegion }}
-    stackName: SBCPP-${{ parameters.environmentName }}-RDS
-    templateSource: file
-    templateFile: infrastructure/cloudformation/templates/6-RDS.yml
-    templateParametersFile: infrastructure/cloudformation/parameters-final/6-RDS.json
 
 - task: CloudFormationCreateOrUpdateStack@1
   displayName: CFN - Deploy ALB Portal Stack

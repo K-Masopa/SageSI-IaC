@@ -1,19 +1,15 @@
 [
   {
     "ParameterKey": "StackCore",
-    "ParameterValue": "SBCPP-QA-CORE"
+    "ParameterValue": "SageSI-QA-CORE"
   },
   {
     "ParameterKey": "StackSNS",
-    "ParameterValue": "SBCPP-QA-SNS"
-  },
-  {
-    "ParameterKey": "StackS3",
-    "ParameterValue": "SBCPP-QA-S3"
+    "ParameterValue": "SageSI-QA-SNS"
   },
   {
     "ParameterKey": "StackVPC",
-    "ParameterValue": "SBCPP-QA-VPC"
+    "ParameterValue": "SageSI-QA-VPC"
   },
   {
     "ParameterKey": "CertificateArn",

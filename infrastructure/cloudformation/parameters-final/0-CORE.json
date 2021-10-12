@@ -1,11 +1,11 @@
 [
   {
     "ParameterKey": "ProjectUpper",
-    "ParameterValue": "ZA-SBCPP"
+    "ParameterValue": "ZA-SageSI"
   },
   {
     "ParameterKey": "ProjectLower",
-    "ParameterValue": "za-sbcpp"
+    "ParameterValue": "za-sagesi"
   },
   {
     "ParameterKey": "EnvironmentUpper",

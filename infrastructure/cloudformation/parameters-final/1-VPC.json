@@ -1,7 +1,7 @@
 [
   {
     "ParameterKey": "StackCore",
-    "ParameterValue": "SBCPP-QA-CORE"
+    "ParameterValue": "SageSI-QA-CORE"
   },
   {
     "ParameterKey": "CIDRPrefix",
